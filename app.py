@@ -9,14 +9,15 @@ st.header('Fundos Imobiliários')
 
 ### Setup do session state para poder baixar a planilha
 
-if 'planilha' not in st.session_state:
-    st.session_state['planilha'] = 'nao_pronta'
+# if 'planilha' not in st.session_state:
+#     st.session_state['planilha'] = 'nao_pronta'
 
 ### Abrindo o dataframe e tratando os dados
 
-tabela = 'fiis_thales_2022-12-07.xlsx'
+tabela = 'fiis_thales_2022-12-10.xlsx'
 
 df = pd.read_excel(tabela, sheet_name='FII', usecols='A:V')
+df_completa = df.copy()
 df['Yield\nAnualiz.(%)'] = df['Yield\nAnualiz.(%)']*100
 df.drop(labels=['Divid.\nConsiderado', 'Ônus', 'Link', 'Relatório',
                 'Preço Calculado', 'Upside'], axis=1, inplace=True)
@@ -57,27 +58,27 @@ df2 = df[mask]
 
 ### Desenhando o dataframe filtrado na tela
 
-st.dataframe(df2)
+st.dataframe(df2.drop(columns=['Vac.', 'Inad.', 'Preço\nm2', 'Aluguel\nm2']))
 st.markdown(f'Total de resultados: {num_resultados}')
 
 ### Função para mudar o session state para aparecer o botão de download da planilha
 
-def planilha_pronta():
-    df2.to_excel('planilha_dados_fii.xlsx', index=False)
-    st.session_state['planilha'] = 'finalizada'
+# def planilha_pronta():
+#     df2.to_excel('planilha_dados_fii.xlsx', index=False)
+#     st.session_state['planilha'] = 'finalizada'
 
-st.button('Gerar planilha para download', key='gera_planilha', on_click=planilha_pronta)
+# st.button('Gerar planilha para download', key='gera_planilha', on_click=planilha_pronta)
 
 ### Desenhando o botão para baixar a planilha finalizada
 
-if st.session_state['planilha'] == 'finalizada':
-    with open('planilha_dados_fii.xlsx', 'rb') as file:
-        btn = st.download_button(
-        label='Baixar dados',
-        data=file,
-        file_name='planilha_fiis.xlsx',
-        mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
+# if st.session_state['planilha'] == 'finalizada':
+#     with open('planilha_dados_fii.xlsx', 'rb') as file:
+#         btn = st.download_button(
+#         label='Baixar dados',
+#         data=file,
+#         file_name='planilha_fiis.xlsx',
+#         mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+#     )
 
 ### Desenhando as abas com informações dos FIIs
 
@@ -98,3 +99,7 @@ for index, value in df2.iterrows():
         
         col2.metric(label='Ultimo dividendo', value=f'R$ {dividendos:.2f}', delta=f'{delta_dividendos:.2f}', help='Mostra o último dividendo pago, e sua variação em relação a média dos dividendos pagos nos últimos 12 meses.')
         col2.markdown(f'**Div. Yield:** {dy:.2f} % a.a. (Anualizado)')
+        
+        if not df_completa[df_completa['Ticker'] == value.Ticker]['Relatório'].isna().any():
+            col2.write(f"[Relatório]({df_completa[df_completa['Ticker'] == value.Ticker]['Relatório'][index]})")
+
