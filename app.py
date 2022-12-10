@@ -23,7 +23,7 @@ st.markdown(hide_st_style, unsafe_allow_html=True)
 
 ### Abrindo o dataframe e tratando os dados
 
-tabela = 'fiis_thales_2022-12-10.xlsx'
+tabela = 'fiis_thales_2022-12-10st.xlsx'
 
 df = pd.read_excel(tabela, sheet_name='FII', usecols='A:V')
 df_completa = df.copy()
