@@ -7,6 +7,15 @@ st.set_page_config(layout="wide", page_title='FIIs')
 
 st.header('Fundos Imobiliários')
 
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
 ### Setup do session state para poder baixar a planilha
 
 # if 'planilha' not in st.session_state:
