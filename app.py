@@ -72,21 +72,21 @@ st.dataframe(df2.drop(columns=['Vac.', 'Inad.', 'Preço\nm2', 'Aluguel\nm2']))
 st.markdown(f'Total de resultados: {num_resultados}')
 
 ### Criando caixa de comentários e sugestões
-df_comentarios = pd.read_excel('comentarios.xlsx')
+# df_comentarios = pd.read_excel('comentarios.xlsx')
 
-form = st.form("comment")
-name = form.text_input("Nome")
-comment = form.text_area("Insira seus comentários/sugestões/críticas")
-submit = form.form_submit_button("Enviar")
+# form = st.form("comment")
+# name = form.text_input("Nome")
+# comment = form.text_area("Insira seus comentários/sugestões/críticas")
+# submit = form.form_submit_button("Enviar")
 
-if submit:
-        date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        df_temp = pd.DataFrame([[name, comment, date]], columns=['nome', 'comentario', 'data'])
-        df_comentarios = pd.concat([df_comentarios, df_temp])
-        try:
-            df_comentarios.to_excel('comentarios.xlsx', index=False)
-        except:
-            pass
+# if submit:
+#         date = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+#         df_temp = pd.DataFrame([[name, comment, date]], columns=['nome', 'comentario', 'data'])
+#         df_comentarios = pd.concat([df_comentarios, df_temp])
+#         try:
+#             df_comentarios.to_excel('comentarios.xlsx', index=False)
+#         except:
+#             pass
 
 ### Função para mudar o session state para aparecer o botão de download da planilha
 
