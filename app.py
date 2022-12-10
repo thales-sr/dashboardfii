@@ -16,7 +16,7 @@ if 'planilha' not in st.session_state:
 
 tabela = 'fiis_thales_2022-12-07.xlsx'
 
-df = pd.read_excel(tabela, sheet_name='FII', usecols='A:U')
+df = pd.read_excel(tabela, sheet_name='FII', usecols='A:V')
 df['Yield\nAnualiz.(%)'] = df['Yield\nAnualiz.(%)']*100
 df.drop(labels=['Divid.\nConsiderado', 'Ônus', 'Link', 'Relatório',
                 'Preço Calculado', 'Upside'], axis=1, inplace=True)
