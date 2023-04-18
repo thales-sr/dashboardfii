@@ -1,6 +1,7 @@
 import datetime
 import pandas as pd
 import streamlit as st
+import os
 
 ### Configuração da página
 
@@ -68,6 +69,8 @@ df2 = df[mask]
 
 ### Desenhando o dataframe filtrado na tela
 
+data_modificacao = datetime.datetime.fromtimestamp(os.path.getmtime(tabela))
+st.write(f'Data de atualização da planilha: {data_modificacao}')
 st.dataframe(df2.drop(columns=['Vac.', 'Inad.', 'Preço\nm2', 'Aluguel\nm2']))
 st.markdown(f'Total de resultados: {num_resultados}')
 
