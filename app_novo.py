@@ -25,13 +25,13 @@ st.markdown(hide_st_style, unsafe_allow_html=True)
 
 ### Abrindo o dataframe e tratando os dados
 
-tabela = 'fiis_thales_st.xlsx'
+tabela = 'fiis_thales_st_novo.xlsx'
 
-df = pd.read_excel(tabela, sheet_name='FII', usecols='A:V')
+# df = pd.read_excel(tabela, sheet_name='FII', usecols='A:V')
+df = pd.read_excel(tabela)
 df_completa = df.copy()
-df['Yield\nAnualiz.(%)'] = df['Yield\nAnualiz.(%)']*100
-df.drop(labels=['Divid.\nConsiderado', 'Ônus', 'Link', 'Relatório',
-                'Preço Calculado', 'Upside'], axis=1, inplace=True)
+df['Yield\nAnualiz.(%)'] = df['Yield\nAnualiz.(%)']
+df.drop(labels=['Divid.\nConsiderado', 'Ônus', 'Link', 'Relatório', 'Preço Calculado', 'Upside'], axis=1, inplace=True)
 
 df['Yield\nAnualiz.(%)'] = df['Yield\nAnualiz.(%)'].fillna(0)
 df['P/VP'] = df['P/VP'].fillna(0)
@@ -69,9 +69,11 @@ df2 = df[mask]
 
 ### Desenhando o dataframe filtrado na tela
 
+colunas_df2=['Ticker', 'Tipo', 'Setor', 'Gestora', 'Preço atual', 'Divid.', 'Yield\nAnualiz.(%)', 'Divid.\n12m', 'VP', 'P/VP', 'Caixa\n(%)', 'Cotistas']
 data_modificacao = datetime.datetime.fromtimestamp(os.path.getmtime(tabela))
 st.write(f'Data de atualização da planilha: {data_modificacao}')
-st.dataframe(df2.drop(columns=['Vac.', 'Inad.', 'Preço\nm2', 'Aluguel\nm2']))
+# st.dataframe(df2.drop(columns=['Vac.', 'Inad.', 'Preço\nm2', 'Aluguel\nm2']))
+st.dataframe(df2[colunas_df2])
 st.markdown(f'Total de resultados: {num_resultados}')
 
 ### Criando caixa de comentários e sugestões
@@ -112,6 +114,11 @@ st.markdown(f'Total de resultados: {num_resultados}')
 
 ### Desenhando as abas com informações dos FIIs
 
+colunas = []
+
+for n in range (1,7):
+    colunas.append(df_completa.columns[-n])
+
 for index, value in df2.iterrows():
     with st.expander(f'**{value.Ticker}**', expanded=False):
         
@@ -132,4 +139,15 @@ for index, value in df2.iterrows():
         
         if not df_completa[df_completa['Ticker'] == value.Ticker]['Relatório'].isna().any():
             col2.write(f"[Relatório]({df_completa[df_completa['Ticker'] == value.Ticker]['Relatório'][index]})")
+            
+        dados_dividendos = []
+        
+        for n in range (1,7):
+            dados_dividendos.append(value[-n])
+
+        df_dividendos = pd.DataFrame(dados_dividendos, index=colunas).rename(columns={0: 'Proventos'})
+        
+        st.write('**Dividendos**')
+        # st.dataframe(df_dividendos)
+        st.bar_chart(df_dividendos)
 
