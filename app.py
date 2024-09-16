@@ -1,7 +1,8 @@
 import datetime
+import os
+
 import pandas as pd
 import streamlit as st
-import os
 
 ### Configuração da página
 
@@ -57,10 +58,20 @@ with st.sidebar:
     nome_fii = st.text_input('Nome do FII', value='', key='nomefii').upper()
     nome_gestora = st.text_input('Nome da gestora', value='', key='nomegestora')
     nome_setor = st.text_input('Setor', value='', key='setor')
+    
+    carteira = st.checkbox('Em carteira?')
 
 ### Montando a máscara de filtro do dataframe
 
 mask = (df['Yield\nAnualiz.(%)'].between(float(dy_min), float(dy_max))) & (df['P/VP'].between(float(pvp_min), float(pvp_max))) & (df['Ticker'].str.contains(nome_fii)) & (df['Gestora'].str.contains(nome_gestora, case=False)) & (df['Setor'].str.contains(nome_setor, case=False))
+if carteira:
+    mask = (df['Ticker'].isin(['BTLG11',
+'HGLG11',
+'KNIP11',
+'RBRF11',
+'RBRR11',
+'VSHO11']))
+
 num_resultados = df[mask].shape[0]
 
 ### Filtrando o dataframe
