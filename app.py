@@ -26,23 +26,20 @@ st.markdown(hide_st_style, unsafe_allow_html=True)
 
 ### Abrindo o dataframe e tratando os dados
 
-tabela = 'fiis_thales_st.xlsx'
+tabela = 'fundos_thales_st.xlsx'
 
-df = pd.read_excel(tabela, sheet_name='FII', usecols='A:V')
+# df = pd.read_excel(tabela, sheet_name='FII', usecols='A:V')
+df = pd.read_excel(tabela)
 df_completa = df.copy()
-df['Yield\nAnualiz.(%)'] = df['Yield\nAnualiz.(%)']*100
-df.drop(labels=['Divid.\nConsiderado', 'Ônus', 'Link', 'Relatório',
-                'Preço Calculado', 'Upside'], axis=1, inplace=True)
-
-df['Yield\nAnualiz.(%)'] = df['Yield\nAnualiz.(%)'].fillna(0)
+df['DY 12M'] = df['DY 12M']
+df['DY 12M'] = df['DY 12M'].fillna(0)
+df['P/VP'] = df['Preço'] / df['VP']
 df['P/VP'] = df['P/VP'].fillna(0)
-df['Divid.'] = df['Divid.'].replace('-', 0).fillna(0)
-df['Divid.\n12m'] = df['Divid.\n12m'].fillna(0)
-df['Gestora'] = df['Gestora'].fillna('')
+df['Dividendo'] = df['Dividendo'].replace('-', 0).fillna(0)
 
-gestora = df['Gestora'].sort_values().unique().tolist()
-setor = df['Setor'].unique().tolist()
-div_yield = df['Yield\nAnualiz.(%)'].unique().tolist()
+# gestora = df['Gestora'].sort_values().unique().tolist()
+# setor = df['Setor'].unique().tolist()
+div_yield = df['DY 12M'].unique().tolist()
 
 ### Desenhando os elementos
 
@@ -52,18 +49,23 @@ with st.sidebar:
     dy_min = st.number_input('DY Mínimo', min_value=0.0, step=0.5)
     dy_max = st.number_input('DY Máximo', min_value=0.0, value = 10000.0, step=0.5)
 
-    pvp_min = st.number_input('P/VP Mínimo', min_value=0.0, step=0.1)
+    pvp_min = st.number_input('P/VP Mínimo', min_value=-50.0, step=0.1)
     pvp_max = st.number_input('P/VP Máximo', min_value=0.0, value = 2000.0, step=0.1)
+    
+    cotistas_min = st.number_input('Mínimo cotistas', min_value=0, value = 0, step = 10000)
+    cotistas_max = st.number_input('Máximo cotistas', min_value=0, value = 2000000, step=10000)
 
     nome_fii = st.text_input('Nome do FII', value='', key='nomefii').upper()
-    nome_gestora = st.text_input('Nome da gestora', value='', key='nomegestora')
-    nome_setor = st.text_input('Setor', value='', key='setor')
+    # nome_gestora = st.text_input('Nome da gestora', value='', key='nomegestora')
+    # nome_setor = st.text_input('Setor', value='', key='setor')
     
     carteira = st.checkbox('Em carteira?')
 
 ### Montando a máscara de filtro do dataframe
 
-mask = (df['Yield\nAnualiz.(%)'].between(float(dy_min), float(dy_max))) & (df['P/VP'].between(float(pvp_min), float(pvp_max))) & (df['Ticker'].str.contains(nome_fii)) & (df['Gestora'].str.contains(nome_gestora, case=False)) & (df['Setor'].str.contains(nome_setor, case=False))
+# mask = (df['DY 12M'].between(float(dy_min), float(dy_max))) & (df['P/VP'].between(float(pvp_min), float(pvp_max))) & (df['Ticker'].str.contains(nome_fii)) & (df['Gestora'].str.contains(nome_gestora, case=False)) & (df['Setor'].str.contains(nome_setor, case=False))
+mask = (df['DY 12M'].between(float(dy_min), float(dy_max))) & (df['P/VP'].between(float(pvp_min), float(pvp_max))) & (df['Ticker'].str.contains(nome_fii)) & (df['Número de Cotistas'].between(float(cotistas_min), float(cotistas_max)))
+# mask = (df['DY 12M'].between(float(dy_min), float(dy_max)))
 if carteira:
     mask = (df['Ticker'].isin(['BTLG11',
 'HGLG11',
@@ -82,7 +84,7 @@ df2 = df[mask]
 
 data_modificacao = datetime.datetime.fromtimestamp(os.path.getmtime(tabela))
 st.write(f'Data de atualização da planilha: {data_modificacao}')
-st.dataframe(df2.drop(columns=['Vac.', 'Inad.', 'Preço\nm2', 'Aluguel\nm2']))
+st.dataframe(df2.drop(columns=['Relatório', 'Setor']).reset_index(drop=True).style.format({'Preço': 'R$ {:,.2f}', 'VP': 'R$ {:,.2f}', 'Dividendo': 'R$ {:,.2f}', 'DY 12M': '{:.2f} %', 'P/VP': '{:.2f}', 'Número de Cotistas': '{:.0f}', 'Caixa': '{:.2f}', 'DY CAGR 3 Anos': '{:.2f}'}), width='stretch')
 st.markdown(f'Total de resultados: {num_resultados}')
 
 ### Criando caixa de comentários e sugestões
@@ -128,14 +130,14 @@ for index, value in df2.iterrows():
         
         col1, col2 = st.columns([1,1])
         
-        dividendos = float(value['Divid.'])
-        dividendos_12m = float(value['Divid.\n12m'])
-        delta_dividendos = dividendos - dividendos_12m/12
-        dy = value['Yield\nAnualiz.(%)']
+        dividendos = float(value['Dividendo'])
+        dividendos_12m = float(value['DY 12M']*value['Preço']/12/100)
+        delta_dividendos = dividendos - dividendos_12m
+        dy = value['DY 12M']
         
-        col1.write(f'**Gestora:** {value.Gestora}')
-        col1.write(f'**Setor:** {value.Setor}')
-        col1.write(f'**Preço:** {value["Preço atual"]}')
+        # col1.write(f'**Gestora:** {value.Gestora}')
+        # col1.write(f'**Setor:** {value.Setor}')
+        col1.write(f'**Preço:** {value["Preço"]}')
         col1.write(f'**VP:** {value.VP}')
         
         col2.metric(label='Ultimo dividendo', value=f'R$ {dividendos:.2f}', delta=f'{delta_dividendos:.2f}', help='Mostra o último dividendo pago, e sua variação em relação a média dos dividendos pagos nos últimos 12 meses.')
