@@ -1,7 +1,9 @@
+# Backup do app original
 import datetime
+import os
+
 import pandas as pd
 import streamlit as st
-import os
 
 ### Configuração da página
 
@@ -25,13 +27,13 @@ st.markdown(hide_st_style, unsafe_allow_html=True)
 
 ### Abrindo o dataframe e tratando os dados
 
-tabela = 'fiis_thales_st_novo.xlsx'
+tabela = 'fiis_thales_st.xlsx'
 
-# df = pd.read_excel(tabela, sheet_name='FII', usecols='A:V')
-df = pd.read_excel(tabela)
+df = pd.read_excel(tabela, sheet_name='FII', usecols='A:V')
 df_completa = df.copy()
-df['Yield\nAnualiz.(%)'] = df['Yield\nAnualiz.(%)']
-df.drop(labels=['Divid.\nConsiderado', 'Ônus', 'Link', 'Relatório', 'Preço Calculado', 'Upside'], axis=1, inplace=True)
+df['Yield\nAnualiz.(%)'] = df['Yield\nAnualiz.(%)']*100
+df.drop(labels=['Divid.\nConsiderado', 'Ônus', 'Link', 'Relatório',
+                'Preço Calculado', 'Upside'], axis=1, inplace=True)
 
 df['Yield\nAnualiz.(%)'] = df['Yield\nAnualiz.(%)'].fillna(0)
 df['P/VP'] = df['P/VP'].fillna(0)
@@ -57,10 +59,20 @@ with st.sidebar:
     nome_fii = st.text_input('Nome do FII', value='', key='nomefii').upper()
     nome_gestora = st.text_input('Nome da gestora', value='', key='nomegestora')
     nome_setor = st.text_input('Setor', value='', key='setor')
+    
+    carteira = st.checkbox('Em carteira?')
 
 ### Montando a máscara de filtro do dataframe
 
 mask = (df['Yield\nAnualiz.(%)'].between(float(dy_min), float(dy_max))) & (df['P/VP'].between(float(pvp_min), float(pvp_max))) & (df['Ticker'].str.contains(nome_fii)) & (df['Gestora'].str.contains(nome_gestora, case=False)) & (df['Setor'].str.contains(nome_setor, case=False))
+if carteira:
+    mask = (df['Ticker'].isin(['BTLG11',
+'HGLG11',
+'KNIP11',
+'RBRF11',
+'RBRR11',
+'VSHO11']))
+
 num_resultados = df[mask].shape[0]
 
 ### Filtrando o dataframe
@@ -69,11 +81,9 @@ df2 = df[mask]
 
 ### Desenhando o dataframe filtrado na tela
 
-colunas_df2=['Ticker', 'Tipo', 'Setor', 'Gestora', 'Preço atual', 'Divid.', 'Yield\nAnualiz.(%)', 'Divid.\n12m', 'VP', 'P/VP', 'Caixa\n(%)', 'Cotistas']
 data_modificacao = datetime.datetime.fromtimestamp(os.path.getmtime(tabela))
 st.write(f'Data de atualização da planilha: {data_modificacao}')
-# st.dataframe(df2.drop(columns=['Vac.', 'Inad.', 'Preço\nm2', 'Aluguel\nm2']))
-st.dataframe(df2[colunas_df2])
+st.dataframe(df2.drop(columns=['Vac.', 'Inad.', 'Preço\nm2', 'Aluguel\nm2']))
 st.markdown(f'Total de resultados: {num_resultados}')
 
 ### Criando caixa de comentários e sugestões
@@ -114,11 +124,6 @@ st.markdown(f'Total de resultados: {num_resultados}')
 
 ### Desenhando as abas com informações dos FIIs
 
-colunas = []
-
-for n in range (1,7):
-    colunas.append(df_completa.columns[-n])
-
 for index, value in df2.iterrows():
     with st.expander(f'**{value.Ticker}**', expanded=False):
         
@@ -139,15 +144,4 @@ for index, value in df2.iterrows():
         
         if not df_completa[df_completa['Ticker'] == value.Ticker]['Relatório'].isna().any():
             col2.write(f"[Relatório]({df_completa[df_completa['Ticker'] == value.Ticker]['Relatório'][index]})")
-            
-        dados_dividendos = []
-        
-        for n in range (1,7):
-            dados_dividendos.append(value[-n])
-
-        df_dividendos = pd.DataFrame(dados_dividendos, index=colunas).rename(columns={0: 'Proventos'})
-        
-        st.write('**Dividendos**')
-        # st.dataframe(df_dividendos)
-        st.bar_chart(df_dividendos)
 
