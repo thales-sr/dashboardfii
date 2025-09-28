@@ -85,7 +85,7 @@ df2 = df[mask]
 
 data_modificacao = datetime.datetime.fromtimestamp(os.path.getmtime(tabela))
 st.write(f'Data de atualização da planilha: {data_modificacao}')
-st.dataframe(df2.drop(columns=['Relatório', 'Setor']).reset_index(drop=True).style.format({'Preço': 'R$ {:,.2f}', 'VP': 'R$ {:,.2f}', 'Dividendo': 'R$ {:,.2f}', 'DY 12M': '{:.2f} %', 'P/VP': '{:.2f}', 'Número de Cotistas': '{:.0f}', 'Caixa': '{:.2f}', 'DY CAGR 3 Anos': '{:.2f}'}), width='stretch')
+st.dataframe(df2.drop(columns=['Relatório', 'Setor']).reset_index(drop=True).style.format({'Preço': 'R$ {:,.2f}', 'VP': 'R$ {:,.2f}', 'Dividendo': 'R$ {:,.2f}', 'DY 12M': '{:.2f} %', 'P/VP': '{:.2f}', 'Número de Cotistas': '{:.0f}', 'Caixa': '{:.2f}', 'DY CAGR 3 Anos': '{:.2f}'}))
 st.markdown(f'Total de resultados: {num_resultados}')
 
 ### Criando caixa de comentários e sugestões
@@ -146,6 +146,7 @@ for index, value in df2.iterrows():
         
         if not df_completa[df_completa['Ticker'] == value.Ticker]['Relatório'].isna().any():
             col2.write(f"[Relatório]({df_completa[df_completa['Ticker'] == value.Ticker]['Relatório'][index]})")
+
 
 
 
