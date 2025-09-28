@@ -17,7 +17,8 @@ hide_st_style = """
             header {visibility: hidden;}
             </style>
             """
-st.markdown(hide_st_style, unsafe_allow_html=True)
+# st.markdown(hide_st_style, unsafe_allow_html=True)
+st.markdown(unsafe_allow_html=True)
 
 ### Setup do session state para poder baixar a planilha
 
@@ -145,4 +146,5 @@ for index, value in df2.iterrows():
         
         if not df_completa[df_completa['Ticker'] == value.Ticker]['Relatório'].isna().any():
             col2.write(f"[Relatório]({df_completa[df_completa['Ticker'] == value.Ticker]['Relatório'][index]})")
+
 
